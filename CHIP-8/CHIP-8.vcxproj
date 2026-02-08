@@ -105,10 +105,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\Adi Silverman\Documents\sdl\SDL3-3.4.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);C:\Users\Adi Silverman\Documents\sdl\SDL3-3.4.0\lib\x64\SDL3.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Adi Silverman\Documents\sdl\SDL3-3.4.0\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -128,6 +131,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="chip8.c" />
+    <ClCompile Include="graphics.c" />
+    <ClCompile Include="input.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="opcodes.c" />
   </ItemGroup>

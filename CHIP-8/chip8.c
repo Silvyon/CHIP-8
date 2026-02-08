@@ -17,7 +17,7 @@ uint16_t pc; // progaram counter
 
 //flasg
 uint16_t drawFlag;
-uint16_t waitingForKeyFlag;
+uint16_t waitingForKeyFlag = 0;
 
 //display
 uint8_t gfx[SCREEN_WIDTH * SCREEN_HEIGHT];
@@ -65,9 +65,9 @@ void initialize()
 	sp = 0;
 
 	//clear display
-	for (int r = 0; r < SCREEN_WIDTH; r++)
-		for(int c = 0; c < SCREEN_HEIGHT; c++)
-			gfx[r * SCREEN_WIDTH + c] = 0;
+	for (int y = 0; y < SCREEN_HEIGHT; y++)
+		for (int x = 0; x < SCREEN_WIDTH; x++)
+			gfx[y * SCREEN_WIDTH + x] = 0;
 
 	//clear stack
 	for (int i = 0; i < 16; i++)
@@ -99,6 +99,7 @@ void initialize()
 
 void loadGame(const char* gameName)
 {
+	printf("Trying to open: %s\n", gameName);
 	FILE* game = fopen(gameName, "rb");
 	if (game == NULL) {
 		printf("Failed to open %s\n", gameName);
@@ -131,8 +132,12 @@ void emulateCycle()
 
 		default: //unknown opcode
 			printf("Unknown opcode [0x0000]: 0x%X\n", opcode);
+			break;
 		}
+		break;
 
+	case 0x1000: // 0x1NNN: Jumps to address NNN
+		OP_1NNN();
 		break;
 
 	case 0x2000: // 0x2NNN: calls subroutine at NNN
@@ -200,6 +205,7 @@ void emulateCycle()
 
 		default: //unknown opcode
 			printf("Unknown opcode [0x8000]: 0x%X\n", opcode);
+			break;
 		}
 		break;	
 
@@ -233,10 +239,15 @@ void emulateCycle()
 		case 0x0001: // 0xEXA1: Skips the next instruction if the key stored in VX(only consider the lowest nibble) is not pressed
 			OP_EXA1();
 			break;
+
+		default: //unknown opcode
+			printf("Unknown opcode [0x0000E]: 0x%X\n", opcode);
+			break;
 		}
+		break;
 
 	case 0xF000:
-		switch (opcode & 0x00FF)
+		switch (opcode & 0x000F)
 		{
 		case 0x0007: // Sets VX to the value of the delay timer
 			OP_FX07();
@@ -246,40 +257,51 @@ void emulateCycle()
 			OP_FX0A();
 			break;
 
-		case 0x0015: // Sets the delay timer to VX
-			OP_FX15();
-			break;
-
-		case 0x0018: // Sets the sound timer to VX
+		case 0x0008: // Sets the sound timer to VX
 			OP_FX18();
 			break;
 
-		case 0x001E: // Adds VX to I. VF is not affected
+		case 0x000E: // Adds VX to I. VF is not affected
 			OP_FX1E();
 			break;
 
-		case 0x0029: // Sets I to the location of the sprite for the character in VX(only consider the lowest nibble). Characters 0-F (in hexadecimal) are represented by a 4x5 font
+		case 0x0009: // Sets I to the location of the sprite for the character in VX(only consider the lowest nibble). Characters 0-F (in hexadecimal) are represented by a 4x5 font
 			OP_FX29();
 			break;
 
-		case 0x0033: // Stores the binary-coded decimal representation of VX, with the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2
+		case 0x0003: // Stores the binary-coded decimal representation of VX, with the hundreds digit in memory at location in I, the tens digit at location I+1, and the ones digit at location I+2
 			OP_FX33();
 			break;
 
-		case 0x0055: // Stores from V0 to VX (including VX) in memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified
-			OP_FX55();
+		case 0x0005:
+			switch (opcode & 0x00F0)
+			{
+			case 0x0010: // Sets the delay timer to VX
+				OP_FX15();
+				break;
+			case 0x0050: // Stores from V0 to VX (including VX) in memory, starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified
+				OP_FX55();
+				break;
+
+			case 0x0060: // Fills from V0 to VX (including VX) with values from memory, starting at address I. The offset from I is increased by 1 for each value read, but I itself is left unmodified
+				OP_FX65();
+				break;
+			default: //unknown opcode
+				printf("Unknown opcode [0x00F0]: 0x%X\n", opcode);
+				break;
+			}
 			break;
 
-		case 0x0065: // Fills from V0 to VX (including VX) with values from memory, starting at address I. The offset from I is increased by 1 for each value read, but I itself is left unmodified
-			OP_FX65();
-			break;
 
 		default: //unknown opcode
 			printf("Unknown opcode [0xF000]: 0x%X\n", opcode);
+			break;
 		}
+		break;
 
 	default: //unknown opcode
 		printf("Unknown opcode: 0x%X\n", opcode);
+		break;
 	}
 
 	//update timers

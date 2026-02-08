@@ -141,4 +141,14 @@ void OP_FX55();
 
 void OP_FX65();
 
+//graphics functions
+void setUpGraphics();
+
+void drawGraphics();
+
+//input functions
+void setUpInput();
+
+void setKeys();
+
 #endif

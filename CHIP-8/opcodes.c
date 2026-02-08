@@ -7,9 +7,9 @@
 
 void OP_00E0() // Clears the screen
 {
-	for (int r = 0; r < SCREEN_WIDTH; r++)
-		for (int c = 0; c < SCREEN_HEIGHT; c++)
-			gfx[r * SCREEN_WIDTH + c] = 0;
+	for (int y = 0; y < SCREEN_HEIGHT; y++)
+		for (int x = 0; x < SCREEN_WIDTH; x++)
+			gfx[y * SCREEN_WIDTH + x] = 0;
 }
 
 void OP_00EE() // Returns from a subroutine
