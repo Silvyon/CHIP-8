@@ -8,31 +8,41 @@
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Texture* texture;
 
 void setUpGraphics()
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow("CHIP-8", 640, 320, 0);
 	renderer = SDL_CreateRenderer(window, NULL);
-	SDL_SetRenderLogicalPresentation(renderer, 64, 32, SDL_LOGICAL_PRESENTATION_STRETCH);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 64, 32);
+	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 }
 
 void drawGraphics()
 {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	void* pixels;
+	int pitch;
+	SDL_LockTexture(texture, NULL, &pixels, &pitch);
+
+	SDL_UnlockTexture(texture);
+
+	uint32_t* screen = (uint32_t*)pixels;
+
+	for (int i = 0; i < 64 * 32; i++)
+	{
+		if (gfx[i] == 0)
+			screen[i] = 0x000000FF;
+		else
+			screen[i] = 0xFFFFFFFF;
+	}
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // Black background
 	SDL_RenderClear(renderer);
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	for (int y = 0; y < SCREEN_HEIGHT; y++)
-	{
-		for (int x = 0; x < SCREEN_WIDTH; x++)
-		{
-			gfx[y * SCREEN_WIDTH + x] = 1;
-			if (gfx[y * SCREEN_WIDTH + x])
-			{
-				SDL_RenderPoint(renderer, x, y);
-			}
-		}
-	}
+	SDL_RenderTexture(renderer, texture, NULL, NULL);
+
+	SDL_RenderPresent(renderer);
+
+	drawFlag = 0;
 }

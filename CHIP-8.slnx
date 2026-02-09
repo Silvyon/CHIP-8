@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="CHIP-8/CHIP-8.vcxproj" />
+  <Project Path="CHIP-8/CHIP-8.vcxproj" Id="937b5ca4-f05e-488a-b50b-a3b2681c191b" />
 </Solution>

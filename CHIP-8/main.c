@@ -14,12 +14,19 @@ int main(int argc, const char* argv[])
 	setUpInput();
 
 	initialize();
-	loadGame("C:/Users/Adi Silverman/source/octojam1title.ch8");
+	loadGame("petdog.ch8");
 
 	int running = 1;
 	while(running)
 	{
 		emulateCycle();
+
+		uint32_t now = SDL_GetTicks();
+		if(now - lastTimerUpdate >= MS_PER_TIMER_CYCLE)
+		{
+			updateTimers();
+			lastTimerUpdate = now;
+		}
 
 		if(drawFlag)
 		{
@@ -27,6 +34,8 @@ int main(int argc, const char* argv[])
 		}
 
 		setKeys();
+
+		SDL_Delay(MS_PER_CPU_CYCLE);
 	}
 
 	return 0;

@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <conio.h>
 #include "chip8.h"
+#include <SDL3/SDL.h>
+
 
 //memory
 uint8_t memory[MEMORY_MAX];
@@ -25,6 +27,7 @@ uint8_t gfx[SCREEN_WIDTH * SCREEN_HEIGHT];
 //timers
 uint8_t delay_timer;
 uint8_t sound_timer;
+uint32_t lastTimerUpdate;
 
 //stack
 uint16_t stack[16];
@@ -57,6 +60,11 @@ uint8_t chip8_fontset[80] =
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
+//cycle times
+int MS_PER_CPU_CYCLE = 1000 / CPU_CYCLES_PER_SECOND;
+int MS_PER_TIMER_CYCLE = 1000 / TIMER_CYCLES_PER_SECOND;
+
+
 void initialize()
 {
 	pc = 0x200;
@@ -74,7 +82,7 @@ void initialize()
 		stack[i] = 0;
 
 	//clear regiesters V0 - VF
-	for (int i = 0; i < VF; i++)
+	for (int i = 0; i < 16; i++)
 		reg[i] = 0;
 
 	//clear memory
@@ -86,8 +94,9 @@ void initialize()
 		memory[i] = chip8_fontset[i];
 
 	//reset timers
-	delay_timer = 60;
-	sound_timer = 60;
+	delay_timer = 0;
+	sound_timer = 0;
+	lastTimerUpdate = SDL_GetTicks();
 
 	//change rand seed
 	srand(time(NULL));
@@ -207,7 +216,7 @@ void emulateCycle()
 			printf("Unknown opcode [0x8000]: 0x%X\n", opcode);
 			break;
 		}
-		break;	
+		break;
 
 	case 0x9000: // 9XY0: Skips the next instruction if VX does not equal VY
 		OP_9XY0();
@@ -303,26 +312,23 @@ void emulateCycle()
 		printf("Unknown opcode: 0x%X\n", opcode);
 		break;
 	}
+}
 
-	//update timers
-	if(delay_timer > 0)
+
+void updateTimers()
+{
+	if (delay_timer > 0)
 	{
 		--delay_timer;
 	}
 
-	if(sound_timer > 0)
+	if (sound_timer > 0)
 	{
-		if(sound_timer == 1)
+		if (sound_timer == 1)
 		{
 			printf("BEEP! \n");
 		}
 		--sound_timer;
-	}
-
-	//increment pc
-	if (!waitingForKeyFlag)
-	{
-		pc += 2;
 	}
 }
 

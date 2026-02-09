@@ -9,6 +9,9 @@
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
 
+# define CPU_CYCLES_PER_SECOND 700;
+# define TIMER_CYCLES_PER_SECOND 60;
+
 //memory
 extern uint8_t memory[MEMORY_MAX];
 
@@ -51,6 +54,7 @@ extern uint8_t gfx[SCREEN_WIDTH * SCREEN_HEIGHT];
 //timers
 extern uint8_t delay_timer;
 extern uint8_t sound_timer;
+extern uint32_t lastTimerUpdate;
 
 //stack
 extern uint16_t stack[16];
@@ -65,12 +69,18 @@ extern uint16_t opcode;
 //font set
 extern uint8_t chip8_fontset[80];
 
+//
+extern int MS_PER_CPU_CYCLE;
+extern int MS_PER_TIMER_CYCLE;
 
+//main functions
 void initialize();
 
 void loadGame(const char *gameName);
 
 void emulateCycle();
+
+void updateTimers();
 
 //opcode functions
 void OP_00E0();
